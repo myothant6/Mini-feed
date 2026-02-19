@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Feed</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #000;
+    color: white;
+}
+
+header {
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: 1px solid #222;
+}
+
+.container {
+    padding: 15px;
+}
+
+input, textarea {
+    width: 100%;
+    background: #111;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+textarea {
+    height: 70px;
+    resize: none;
+}
+
+button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.post-btn {
+    background: #1DA1F2;
+    color: white;
+}
+
+.like-btn {
+    background: #222;
+    color: #1DA1F2;
+    margin-right: 5px;
+}
+
+.delete-btn {
+    background: #222;
+    color: red;
+}
+
+.post {
+    background: #111;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 12px;
+    border: 1px solid #222;
+}
+
+.name {
+    font-weight: bold;
+}
+
+.time {
+    font-size: 12px;
+    color: gray;
+    margin-top: 5px;
+}
+
+.actions {
+    margin-top: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>My Offline Feed</header>
+
+<div class="container">
+    <input id="nameInput" placeholder="Your name">
+    <textarea id="postInput" placeholder="What's happening?"></textarea>
+    <button class="post-btn" onclick="addPost()">Post</button>
+
+    <div id="feed"></div>
+</div>
+
+<script>
+let posts = JSON.parse(localStorage.getItem("posts")) || [];
+
+function savePosts() {
+    localStorage.setItem("posts", JSON.stringify(posts));
+}
+
+function renderPosts() {
+    const feed = document.getElementById("feed");
+    feed.innerHTML = "";
+
+    posts.slice().reverse().forEach((post, index) => {
+        feed.innerHTML += `
+            <div class="post">
+                <div class="name">${post.name}</div>
+                <div>${post.text}</div>
+                <div class="time">${post.time}</div>
+                <div class="actions">
+                    <button class="like-btn" onclick="likePost(${posts.length - 1 - index})">
+                        ❤️ ${post.likes}
+                    </button>
+                    <button class="delete-btn" onclick="deletePost(${posts.length - 1 - index})">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function addPost() {
+    const name = document.getElementById("nameInput").value.trim();
+    const text = document.getElementById("postInput").value.trim();
+
+    if (!name || !text) return;
+
+    const newPost = {
+        name: name,
+        text: text,
+        time: new Date().toLocaleString(),
+        likes: Math.floor(Math.random() * 100) + 1
+    };
+
+    posts.push(newPost);
+    savePosts();
+    renderPosts();
+
+    document.getElementById("postInput").value = "";
+}
+
+function likePost(index) {
+    posts[index].likes++;
+    savePosts();
+    renderPosts();
+}
+
+function deletePost(index) {
+    posts.splice(index, 1);
+    savePosts();
+    renderPosts();
+}
+
+renderPosts();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+}
+</script>
+</body>
+</html>
